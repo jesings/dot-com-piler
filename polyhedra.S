@@ -1,7 +1,7 @@
 .global makebox
 .global makesphere
 .global maketorus
-.set resolution,400
+.set resolution,1000
 .set rresolution,resolution*resolution
 .set rresolution2,rresolution*2
 .data
@@ -314,10 +314,10 @@ makesphere://matrix-ifies the tris for a sphere
     call gensphere
     mov $0, %rdx
     cap:
-    dotri 0,pergradation,last
-    cmp $196, %rdx
+    dotri last, pergradation, 0
+    .set endcap,perlayer-4
+    cmp $endcap, %rdx
     jl cap
-    dotri 0,next,pergradation
     body:
     doquad 0,next,pergradation,last
     .set ending,rresolution2-perlayer
