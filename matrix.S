@@ -12,7 +12,6 @@
 .global blankmatrix
 
 .global one
-.global zero
 .data
 matrixstart:
     .quad 0
@@ -22,8 +21,6 @@ newl:
     .asciz "\n"
 indices:
     .quad 0,4,8,12
-zero:
-    .double 0.0
 one:
     .double 1.0
 scalar:

@@ -6,6 +6,7 @@
 .global sin2
 .global exponent
 .global illumination
+.global zeros
 .data
     pi: .double 3.141592658979
     ambient: .double 50, 50, 50, 0

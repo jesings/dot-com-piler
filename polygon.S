@@ -57,7 +57,8 @@ drawtri://first point in ymm0, second point in ymm1, third point in ymm2, draws 
     vmovupd %ymm0, surfacenormal(%rip)
     vmovupd viewvect(%rip), %ymm1
     call dotproduct//take the dot product of the view vector and the normalized vector
-    vcomisd zero(%rip), %xmm0
+    vmovsd zeros(%rip), %xmm8
+    vcomisd %xmm8, %xmm0
     ja enddraw//cull if the resultant vector is facing backwards
     vmovupd Ka(%rip), %ymm0
     vmovupd Kd(%rip), %ymm1

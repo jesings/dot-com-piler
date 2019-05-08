@@ -23,53 +23,53 @@ main:
     lea zbuffer(%rip), %rdi
     mov minval(%rip), %rax
     mov $262144, %rcx
-    rep stosq
+    rep stosq//fill zbuffer with -infinity double
 
     mov $10, %rdi
     mov $4, %rsi
     call makematrix
-    mov %rax, edgem(%rip)
+    mov %rax, edgem(%rip)//make tiny dummy edge matrix
 
     mov $4, %rdi
     mov $4, %rsi
     call makematrix
-    mov %rax, trim(%rip)
+    mov %rax, trim(%rip)//make tiny dummy trimatrix
 
     mov $4, %rdi
     mov $4, %rsi
     call makematrix
-
     push %rax
     mov %rax, %rdi
-    call identitymatrix
-
+    call identitymatrix//make identity coordinate stack matrix
     mov $16, %rdi
     call malloc@PLT
     mov %rax, cstop(%rip)
     pop %rdi
     mov %rdi, (%rax)
 
-    call init_temps
+    call init_temps//initialize temporary values
 
     mov $2, %rax
-    lea parsefile(%rip), %rdi
+    lea parsefile(%rip), %rdi//open parsefile for parsing
     xor %rsi, %rsi
     syscall
     mov %rax, parsefd(%rip)
-
-    call parse
+    call parse//actually parse file
 
     mov $3, %rax
     mov parsefd(%rip), %rdi
-    syscall
+    syscall//close parsefile
 
     mov edgem(%rip), %rdi
-    call freematrix
+    call freematrix//free edge matrix
 
     mov trim(%rip), %rdi
-    call freematrix
+    call freematrix//free trimatrix
 
-    call cspop
+    csstackstill:
+    call cspop//free last item on coordinate stack
+    cmpq $0, cstop(%rip)
+    jne csstackstill
 
     call free_temps
     ret

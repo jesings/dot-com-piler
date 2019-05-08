@@ -1,7 +1,7 @@
 .global makebox
 .global makesphere
 .global maketorus
-.set resolution,1000
+.set resolution,512
 .set rresolution,resolution*resolution
 .set rresolution2,rresolution*2
 .data
@@ -93,7 +93,7 @@ quadrilateral://draws quadrilateral for another kind of shape
     call addtri
     add $80, %rsp
     ret
-.macro handlematrixtrig a, b, c, d, e
+.macro handlematrixtrig a, b, c, d, e//do some grunt work trigonometry for the torus and sphere
     vmulsd pointo3(%rip), %xmm0, %xmm0
     vmulsd pointo3(%rip), %xmm1, %xmm1
     movsd %xmm0, 8(%rsp)
@@ -123,7 +123,7 @@ quadrilateral://draws quadrilateral for another kind of shape
     movsd 16(%rsp), %xmm0
     call cos2
 .endm
-roundmatrix://0-19 phi in rdi, 0-19 theta in rsi, radius is in %xmm3
+roundmatrix://0-19 phi in rdi, 0-19 theta in rsi, radius is in %xmm3, generates the points for a sphere
     sub $32, %rsp
     movsd %xmm3, (%rsp)
     vcvtsi2sd %rsi, %xmm0, %xmm0
@@ -143,7 +143,7 @@ roundmatrix://0-19 phi in rdi, 0-19 theta in rsi, radius is in %xmm3
     call multiplymatrix
     add $32, %rsp
     ret
-.macro doquad a,b,c,d
+.macro doquad a,b,c,d//draws a quadrilateral from a set of points for a sphere or triangle
     vmovupd \a(%rax, %rdx,8), %ymm0
     vmovupd \b(%rax, %rdx,8), %ymm1
     vmovupd \c(%rax, %rdx,8), %ymm2
@@ -155,7 +155,7 @@ roundmatrix://0-19 phi in rdi, 0-19 theta in rsi, radius is in %xmm3
     pop %rax
     add $4, %rdx
 .endm
-.macro dotri a,b,c
+.macro dotri a,b,c//draws a triangle from a set of points for a sphere or triangle
     vmovupd \a(%rax, %rdx,8), %ymm0
     vmovupd \b(%rax, %rdx,8), %ymm1
     vmovupd \c(%rax, %rdx,8), %ymm2
@@ -166,7 +166,7 @@ roundmatrix://0-19 phi in rdi, 0-19 theta in rsi, radius is in %xmm3
     pop %rax
     add $4, %rdx
 .endm
-.macro callmatrix matrix
+.macro callmatrix matrix//handles lots of trimatrix grunt work
     push %rax
     push %rcx
     mov %rdi, %rdx
@@ -196,7 +196,7 @@ roundmatrix://0-19 phi in rdi, 0-19 theta in rsi, radius is in %xmm3
     inc %rcx
     cmp $resolution, %rcx
 .endm
-gensphere://generates the points for a sphere
+gensphere://generates the points for a sphere in roundmatrix, does stuff with them
     mov $resolution, %r8
     vcvtsi2sd %r8, %xmm8, %xmm8
     vmovsd pointy3(%rip), %xmm7
@@ -295,6 +295,7 @@ ret
 .set next,32
 .set last,pergradation+next
 .set end2,rresolution*4
+.set end3,rresolution*4-4
 maketorus://matrix-ifies the tris for a torus
     push %r15
     mov %rdi, %r15
@@ -302,7 +303,7 @@ maketorus://matrix-ifies the tris for a torus
     xor %rdx, %rdx
     twohunnid2:
     doquad 0,next,pergradation,last
-    cmp $end2, %rdx
+    cmp $end3, %rdx
     jl twohunnid2
     mov %rax, %rdi
     call free@PLT

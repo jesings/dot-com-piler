@@ -162,10 +162,10 @@ makespline://xmm0-7: x0,y0,x1,y1,x2,y2,x3,y3 - Works for both bezier and hermite
 
     movsd (%rdx), %xmm0
     movsd 8(%rdx), %xmm1
-    movsd zero(%rip), %xmm2
+    movsd zeros(%rip), %xmm2
     movsd 16(%rdx), %xmm3
     movsd 24(%rdx), %xmm4
-    movsd zero(%rip), %xmm5
+    movsd zeros(%rip), %xmm5
     push %rdi
     push %r8
     push %r9
