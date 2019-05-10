@@ -7,13 +7,18 @@
 .global zbuffer
 .global half
 .data
+    .align 32
     x: .quad 0
     half: .double .5
+    .align 32
     name: .asciz "./image.ppm"
+    .align 32
     parsefile: .asciz "./script"
 .bss
+    .align 32
     data: .zero 1048576
     zbuffer: .zero 2097152
+    .align 32
     edgem: .quad 0
     drawm: .quad 0
     trim: .quad 0
@@ -30,7 +35,7 @@ main:
     call makematrix
     mov %rax, edgem(%rip)//make tiny dummy edge matrix
 
-    mov $4, %rdi
+    mov $4096, %rdi
     mov $4, %rsi
     call makematrix
     mov %rax, trim(%rip)//make tiny dummy trimatrix

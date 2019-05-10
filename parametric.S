@@ -6,6 +6,7 @@
 .global tempmatrixX
 .global tempmatrixG
 .data
+    .align 32
     pointo1: .double .05
     pointo2: .double .31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
     doublee: .double 6.28
@@ -15,6 +16,7 @@
     radius: .double 0
     pio2: .double 1.570796326794896619231321691639751442098584699687552910487
 .bss
+    .align 32
     pointers: .quad 0,0
     tempmatrixG: .quad 0
     tempmatrixX: .quad 0

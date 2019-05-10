@@ -7,11 +7,25 @@
 .global exponent
 .global illumination
 .global zeros
+.global sincos2
 .data
+    .align 32
     pi: .double 3.141592658979
+    .align 32
     ambient: .double 50, 50, 50, 0
+    .align 32
     zeros: .double -0.0, -0.0, -0.0, -0.0
+    .align 32
     twos: .double 2.0, 2.0, 2.0, 2.0
+    .align 32
+    negtwo: .double -2.0
+    .align 32
+    negsix: .double -6.0
+    .align 32
+    twentyfour: .double 24.0
+    .align 32
+    onetwenty: .double 120.0
+    .align 32
     viewvector: .double 0,0,1,0
 .bss
 .text
@@ -57,20 +71,14 @@ deg2rad://converts degrees to radians
     cvtsi2sd %rax, %xmm1
     divsd %xmm1, %xmm0
     ret
-.macro fputrig whichfunc, reg=0
-    sub $8, %rsp
-    vmovsd %xmm\reg, (%rsp)
-    fldl (%rsp)
-    f\whichfunc
-    fstpl (%rsp)
-    vmovsd  (%rsp), %xmm\reg
-    add $8, %rsp
-.endm
-cos2:
-    fputrig cos
-    ret
 sin2:
-    fputrig sin
+    call sin@PLT
+    ret
+cos2:
+    call cos@PLT
+    ret
+sincos2:
+    call sincos@PLT
     ret
 exponent://take xmm0 to the power of xmm1
     sub $8, %rsp

@@ -1,14 +1,18 @@
 .global bresenham
 .global bresenham2
 .data
+    .align 32
     colorR: .byte 255
-    colorG: .byte 255 
-    colorB: .byte 255
     .align 8
-    x: .quad 0
+    colorG: .byte 255 
+    .align 8
+    colorB: .byte 255
+    .align 32
+    _x: .quad 0
     y: .quad 0
     truncator: .double 1000
 .bss
+    .align 32
     x0: .quad 0
     x1: .quad 0
     y0: .quad 0
@@ -57,7 +61,7 @@ bresenham: //something like this: bresenham(int color,int x0,int x1, int y0, int
     vdivsd %xmm2, %xmm3, %xmm2
 #assign x and y
     movq x0(%rip), %r8
-    movq %r8, x(%rip) //x = x-naught
+    movq %r8, _x(%rip) //x = x-naught
     movq y0(%rip), %r8
     movq %r8, y(%rip) //y = y-naught
 #assign a b and d
@@ -87,15 +91,15 @@ o1:
     salq %rbx //double a and b
     start1:
     mov x1(%rip), %rcx
-    cmpq x(%rip), %rcx
-    jl end
+    cmpq _x(%rip), %rcx
+    jl _end
     call plot
     cmp $0,%rdx#check if y needs to be incremented
     jg ifninc1
     incq y(%rip)
     add %rbx, %rdx
     ifninc1:
-    incq x(%rip)
+    incq _x(%rip)
     add %rax, %rdx
     jmp start1
 o2:
@@ -109,11 +113,11 @@ o2:
     start2:
     mov y1(%rip), %rcx
     cmpq y(%rip), %rcx
-    jl end
+    jl _end
     call plot
     cmp $0,%rdx#check if y needs to be incremented
     jg ifninc2
-    incq x(%rip)
+    incq _x(%rip)
     add %rax, %rdx
     ifninc2:
     incq y(%rip)
@@ -127,15 +131,15 @@ o7:
     salq %rbx //double a and b
     start7:
     mov x1(%rip), %rcx
-    cmpq x(%rip), %rcx
-    jl end
+    cmpq _x(%rip), %rcx
+    jl _end
     call plot
     cmp $0,%rdx#check if y needs to be decremented
     jl ifninc7
     decq y(%rip)
     sub %rbx, %rdx
     ifninc7:
-    incq x(%rip)
+    incq _x(%rip)
     add %rax, %rdx
     jmp start7
 o8:
@@ -147,28 +151,28 @@ o8:
     start8:
     mov y1(%rip), %rcx
     cmpq y(%rip), %rcx
-    jg end
+    jg _end
     call plot
     cmp $0,%rdx#check if y needs to be incremented
     jg ifninc8
-    incq x(%rip)
+    incq _x(%rip)
     add %rax, %rdx
     ifninc8:
     decq y(%rip)
     sub %rbx, %rdx
     jmp start8
-    end:
+    _end:
     pop %rbx
     ret
 plot:
 #plot x,y,z!!!
-    cmpq $512, x(%rip)
+    cmpq $512, _x(%rip)
     jae pltdone
     cmpq $512, y(%rip)
     jae pltdone
     mov y(%rip), %r8//this will be the index
     sal $9, %r8
-    add x(%rip), %r8
+    add _x(%rip), %r8
     mov %r8, %r9
     lea zbuffer(%rip), %rcx
 

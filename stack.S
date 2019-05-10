@@ -2,6 +2,7 @@
 .global cspop
 .global cstop
 .data
+    .align 32
     cstop: .quad 0//top of coordinate system stack
 .text
 cspush://push to coordinate system stack

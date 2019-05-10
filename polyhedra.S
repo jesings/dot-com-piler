@@ -1,10 +1,11 @@
 .global makebox
 .global makesphere
 .global maketorus
-.set resolution,512
+.set resolution,2048
 .set rresolution,resolution*resolution
 .set rresolution2,rresolution*2
 .data
+    .align 32
     storage: .zero 64
     pointy3: .double 6.28318530718
     pointo3: .double 0
@@ -27,6 +28,36 @@
     vaddpd %ymm\c, %ymm3, %ymm3
     vaddpd %ymm\a, %ymm3, %ymm3
     call quadrilateralface
+.endm
+.macro entertrig
+    push %rax
+    push %rcx
+    sub $80, %rsp
+    vmovsd %xmm1, 8(%rsp)
+    vmovsd %xmm2, 16(%rsp)
+    vmovsd %xmm3, 24(%rsp)
+    vmovsd %xmm4, 32(%rsp)
+    vmovsd %xmm5, 40(%rsp)
+    vmovsd %xmm6, 48(%rsp)
+    vmovsd %xmm7, 56(%rsp)
+    vmovsd %xmm8, 64(%rsp)
+    vmovsd %xmm9, 72(%rsp)
+    vmovsd %xmm10, (%rsp)
+.endm
+.macro exittrig
+    vmovsd 8(%rsp), %xmm1
+    vmovsd 16(%rsp), %xmm2
+    vmovsd 24(%rsp), %xmm3
+    vmovsd 32(%rsp), %xmm4
+    vmovsd 40(%rsp), %xmm5
+    vmovsd 48(%rsp), %xmm6
+    vmovsd 56(%rsp), %xmm7
+    vmovsd 64(%rsp), %xmm8
+    vmovsd 72(%rsp), %xmm9
+    vmovsd (%rsp), %xmm10
+    add $80, %rsp
+    pop %rcx
+    pop %rax
 .endm
 makebox://X,Y,Z in xmm0-2, h,w,d in xmm3-5
     //½ box
@@ -244,26 +275,36 @@ gentorus://generates the points for a torus
     cvtsi2sd %rcx, %xmm7
 
     vmulsd pointo3(%rip), %xmm6 , %xmm0
+    entertrig
     call cos2
+    exittrig
     movsd %xmm0, %xmm8
     vmulsd pointo3(%rip), %xmm7 , %xmm0
+    entertrig
     call cos2
+    exittrig
     vmulsd %xmm3, %xmm0, %xmm0
     vaddsd %xmm4, %xmm0, %xmm0
     vmulsd %xmm8, %xmm0, %xmm8
     vaddsd %xmm5, %xmm8, %xmm8
 #x = cos(2*M_PI * rot) * (r1 * cos(2*M_PI * circ) + r2) + cx;
     vmulsd pointo3(%rip), %xmm7 , %xmm0
+    entertrig
     call sin2
+    exittrig
     vmulsd %xmm0, %xmm3, %xmm0
     vaddsd %xmm0, %xmm1, %xmm9
 #y = r1 * sin(2*M_PI * circ) + cy;
     vmulsd pointo3(%rip), %xmm6, %xmm0
+    entertrig
     call sin2
+    exittrig
     vmulsd negone(%rip), %xmm0, %xmm0
     movsd %xmm0, %xmm10
     vmulsd pointo3(%rip), %xmm7 , %xmm0
+    entertrig
     call cos2
+    exittrig
     vmulsd %xmm3, %xmm0, %xmm0
     vaddsd %xmm4, %xmm0, %xmm0
     vmulsd %xmm10, %xmm0, %xmm10
@@ -331,4 +372,4 @@ makesphere://matrix-ifies the tris for a sphere
     mov %rax, %rdi
     call free@PLT
     pop %r15
-    ret
+ret

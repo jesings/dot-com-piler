@@ -1,7 +1,8 @@
 .global pr
 .data
+.align 16
 strResult: .zero 4# string buffer to store results
-newl: .asciz "\n"
+.align 32
 message: .asciz  "P3 512 512 255\n"
 .text
 pr://move filename into %rdi

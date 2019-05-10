@@ -6,15 +6,14 @@
 .global dilate
 .global transform
 .data
-pi:
-    .double 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
 .bss
-matrixstart:
+    .align 32
+_matrixstart:
     .quad 0
 .text
 genmanipulate://performs an manipulation (either scaling or translation) specified in rax to matrix specified in rdi
     push %r12
-    mov %rdi, matrixstart(%rip)
+    mov %rdi, _matrixstart(%rip)
     mov $4, %rdi
     mov $4, %rsi
     push %rax
@@ -30,7 +29,7 @@ genmanipulate://performs an manipulation (either scaling or translation) specifi
     mov (%r12), %rdi
     call *%rax
     mov %r12, %rdi
-    mov matrixstart(%rip), %rsi
+    mov _matrixstart(%rip), %rsi
     mov 24(%rsi), %rax
     xchg %rax, 24(%rdi)
     mov  %rax, 24(%rsi)
@@ -76,7 +75,7 @@ rotatey://takes 1 param, rotates about the y axis
     ret
 genrotate://rotates around axis specified in rax, matrix specified in rdi
     push %r12
-    mov %rdi, matrixstart(%rip)
+    mov %rdi, _matrixstart(%rip)
     sub $24, %rsp
     push %rax
     movsd %xmm0, 8(%rsp)
@@ -96,7 +95,7 @@ genrotate://rotates around axis specified in rax, matrix specified in rdi
     pop %rax
     call *%rax
     mov %r12, %rdi
-    mov matrixstart(%rip), %rsi
+    mov _matrixstart(%rip), %rsi
     mov 24(%rsi), %rax
     xchg %rax, 24(%rdi)
     mov  %rax, 24(%rsi)

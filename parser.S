@@ -93,25 +93,43 @@
 .global parse
 .global minval
 .data
+    .align 32
     line: .asciz "line"
+    .align 32
     scale: .asciz "scale"
+    .align 32
     move: .asciz "move"
+    .align 32
     rotate: .asciz "rotate"
+    .align 32
     display: .asciz "display"
+    .align 32
     save: .asciz "save"
-    convert: .asciz "convert"
+    .align 32
+    _convert: .asciz "convert"
+    .align 32
     circle: .asciz "circle"
+    .align 32
     hermite: .asciz "hermite"
+    .align 32
     bezier: .asciz "bezier"
+    .align 32
     box: .asciz "box"
+    .align 32
     sphere: .asciz "sphere"
+    .align 32
     torus: .asciz "torus"
+    .align 32
     cspushm: .asciz "push"
+    .align 32
     cspopm: .asciz "pop"
+    .align 32
     clear: .asciz "clear"
+    .align 32
     minval: .double -inf
     double10: .double 10
 .bss
+    .align 32
     buf: .zero 1024
     curchar: .byte 0
     args: .zero 64
@@ -169,7 +187,7 @@ savel://saves the image into the proper filename, which is unfortunately capped 
     call pr
     call inpstream
     vmovups buf(%rip), %ymm1
-    movsd convert(%rip),%xmm0
+    movsd _convert(%rip),%xmm0
     movsd %xmm0, buf(%rip)
     lea buf(%rip), %rdi
     movb $0x20, 7(%rdi)

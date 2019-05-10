@@ -2,12 +2,19 @@
 .global drawtris
 .global surfacenormal
 .data
+    .align 32
     viewvect: .double 0, 0, 1, 0
+    .align 32
     Ka: .double .1, .1, .1, 0
+    .align 32
     Kd: .double .5, .5, .5, 0
+    .align 32
     Ks: .double .5, .5, .5, 0
+    .align 32
     lightloc: .double -.5, -.75, -1
+    .align 32
     lightcolor: .double 0, 255, 255, 0
+    .align 32
     surfacenormal: .double 0, 0, 0, 0
 .bss
 .text
