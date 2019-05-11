@@ -30,5 +30,9 @@ stack.o: stack.S
 sintable.o: sintable.S
 	gcc -c -g sintable.S
 clean:
-	rm *.o
-	rm $(executable)
+	-rm *.png *.gif *.jpg 2> /dev/null
+	-rm y.tab.c y.tab.h 2> /dev/null
+	-rm lex.yy.c 2> /dev/null
+	-rm -rf mdl.dSYM 2> /dev/null
+	-rm *.o 2> /dev/null
+	-rm $(executable) 2> /dev/null
