@@ -170,17 +170,6 @@ forcematrix://turns square matrix %rdi into an bezier matrix, matrix to force is
     ret
 
 multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix in rsi, no return value
-    pushq %rdi
-    pushq %rsi
-    mov 8(%rsi), %rax
-    imul 16(%rsi), %rax
-    shl $3, %rax
-    mov %rax, %rdi
-    call malloc@PLT
-    mov %rax, %r8
-    popq %rsi
-    popq %rdi//okay this makes a new array
-
     vmovupd indices(%rip), %ymm4
     vpcmpeqq %ymm8, %ymm8, %ymm8
     mov (%rdi),%rax
@@ -221,21 +210,13 @@ multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix i
     vaddsd %xmm6, %xmm10, %xmm10
     vaddsd %xmm7, %xmm11, %xmm11
     vaddsd %xmm8, %xmm12, %xmm12
-    vmovsd %xmm9,(%r8,%rcx)
-    vmovsd %xmm10,8(%r8,%rcx)
-    vmovsd %xmm11,16(%r8,%rcx)
-    vmovsd %xmm12,24(%r8,%rcx)
+    vmovsd %xmm9,(%rdx,%rcx)
+    vmovsd %xmm10,8(%rdx,%rcx)
+    vmovsd %xmm11,16(%rdx,%rcx)
+    vmovsd %xmm12,24(%rdx,%rcx)
     //loop stuff
     inc %rax
     add $32, %rcx
     cmp %r10,%rax
     jl loop_layer_0
-
-    push %rsi
-    push %r8
-    mov (%rsi), %rdi
-    call free@PLT
-    pop %r8
-    pop %rsi
-    mov %r8, (%rsi)//frees the old array in matrix 2, and insert the array pointed to by %r8
     ret

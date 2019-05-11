@@ -200,7 +200,7 @@ clearl:
     rep stosq
     lea data(%rip), %rdi
     xor %rax, %rax
-    mov $131072, %rcx
+    mov $98304, %rcx
     rep stosq
     jmp afterl
 inpstream://file descriptor in parsefd(%rip), returns a string in %rax, or 0 if an EOF is encountered

@@ -28,9 +28,9 @@
 .text
 crossproduct://points packed in ymm0, ymm1
     vsubpd %ymm0, %ymm1, %ymm1//do cross product, find normal vector
-    vsubpd %ymm0, %ymm2, %ymm2//do product of magnitudes of View vector ( <0,0,1> ) and normal vector
-    vmovups %ymm1, %ymm0      //something
-    vmovups %ymm2, %ymm1      //a2*b3-a3*b2,a3*b1-a1*b3,a1*b2-a2*b
+    vsubpd %ymm0, %ymm2, %ymm2
+    vmovupd %ymm1, %ymm0      //something
+    vmovupd %ymm2, %ymm1      //a2*b3-a3*b2,a3*b1-a1*b3,a1*b2-a2*b
     vpermq $0b11001001, %ymm0, %ymm2
     vpermq $0b11010010, %ymm1, %ymm3
     vmulpd %ymm2, %ymm3, %ymm2
@@ -41,9 +41,11 @@ crossproduct://points packed in ymm0, ymm1
     ret
 dotproduct://stuff in ymm0, ymm1
     vmulpd %ymm0, %ymm1, %ymm0
-    vpermq $0b00000010, %ymm0, %ymm1
-    vhaddpd %ymm0, %ymm0, %ymm0
-    vaddsd %xmm0, %xmm1, %xmm0
+    vandpd mask(%rip), %ymm0, %ymm0
+    vextractf128 $1, %ymm0, %xmm1
+    vaddpd %ymm0, %ymm1, %ymm0
+    vunpckhpd %xmm0, %xmm0, %xmm1
+    vaddsd %xmm1, %xmm0, %xmm0
     ret
 magnitude://stuff in ymm0
     vandpd mask(%rip), %ymm0, %ymm0

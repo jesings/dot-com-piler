@@ -185,7 +185,8 @@ plot:
 
     comisd (%rcx, %r9,8), %xmm0
     jb pltdone
-    shl $2, %r8
+    push %r8
+    imul $3, %r8
     lea data(%rip),%rcx
     add %rcx, %r8
 //color the pixel :)
@@ -195,6 +196,8 @@ plot:
     movb %cl, 1(%r8)
     movzbw colorB(%rip), %cx
     movb %cl, 2(%r8)
+    pop %r8
+    shr $2, %r8
     lea zbuffer(%rip),%rcx
     movsd %xmm0, (%rcx, %r9,8)
 //Plotting done 
@@ -243,7 +246,13 @@ bresenham2: //something like this: bresenham(int color,int x0,int x1, int y, dou
     vcomisd (%r9,%rcx,8),%xmm0
     jna oof//if our z coordinate is too great, don't draw, continue to next pixel
     vmovsd %xmm0, (%r9,%rcx,8)//put z into z buffer
-    mov %eax, (%rdi,%rcx,4)//put pixel color in location
+    push %rax
+    push %rcx
+    imul $3,%rcx
+
+    mov %eax, (%rdi,%rcx)//put pixel color in location
+    pop %rcx
+    pop %rax
     oof:
     inc %rcx//increment x draw location
     inc %rsi//increment x
