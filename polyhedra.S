@@ -30,34 +30,14 @@
     call quadrilateralface
 .endm
 .macro entertrig
+    push %rdi
+    push %rsi
     push %rax
-    push %rcx
-    sub $80, %rsp
-    vmovsd %xmm1, 8(%rsp)
-    vmovsd %xmm2, 16(%rsp)
-    vmovsd %xmm3, 24(%rsp)
-    vmovsd %xmm4, 32(%rsp)
-    vmovsd %xmm5, 40(%rsp)
-    vmovsd %xmm6, 48(%rsp)
-    vmovsd %xmm7, 56(%rsp)
-    vmovsd %xmm8, 64(%rsp)
-    vmovsd %xmm9, 72(%rsp)
-    vmovsd %xmm10, (%rsp)
 .endm
 .macro exittrig
-    vmovsd 8(%rsp), %xmm1
-    vmovsd 16(%rsp), %xmm2
-    vmovsd 24(%rsp), %xmm3
-    vmovsd 32(%rsp), %xmm4
-    vmovsd 40(%rsp), %xmm5
-    vmovsd 48(%rsp), %xmm6
-    vmovsd 56(%rsp), %xmm7
-    vmovsd 64(%rsp), %xmm8
-    vmovsd 72(%rsp), %xmm9
-    vmovsd (%rsp), %xmm10
-    add $80, %rsp
-    pop %rcx
     pop %rax
+    pop %rsi
+    pop %rdi
 .endm
 makebox://X,Y,Z in xmm0-2, h,w,d in xmm3-5
     //½ box

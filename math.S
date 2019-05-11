@@ -7,26 +7,23 @@
 .global exponent
 .global illumination
 .global zeros
-.global sincos2
+.global sinarg
+.global cosarg
 .data
     .align 32
     pi: .double 3.141592658979
-    .align 32
     ambient: .double 50, 50, 50, 0
-    .align 32
     zeros: .double -0.0, -0.0, -0.0, -0.0
-    .align 32
     twos: .double 2.0, 2.0, 2.0, 2.0
-    .align 32
     negtwo: .double -2.0
-    .align 32
     negsix: .double -6.0
-    .align 32
     twentyfour: .double 24.0
-    .align 32
     onetwenty: .double 120.0
-    .align 32
+    eightyoneninetytwo: .double 8192
     viewvector: .double 0,0,1,0
+    sinarg: .double 0
+    cosarg: .double 0
+    mask: .quad 0xffffffffffffffff,0xffffffffffffffff,0xffffffffffffffff,0
 .bss
 .text
 crossproduct://points packed in ymm0, ymm1
@@ -49,10 +46,12 @@ dotproduct://stuff in ymm0, ymm1
     vaddsd %xmm0, %xmm1, %xmm0
     ret
 magnitude://stuff in ymm0
+    vandpd mask(%rip), %ymm0, %ymm0
     vmulpd %ymm0, %ymm0, %ymm0
-    vpermq $0b00000010, %ymm0, %ymm1
-    vhaddpd %ymm0, %ymm0, %ymm0
-    vaddsd %xmm0, %xmm1, %xmm0
+    vextractf128 $1, %ymm0, %xmm1
+    vaddpd %ymm0, %ymm1, %ymm0
+    vunpckhpd %xmm0, %xmm0, %xmm1
+    vaddsd %xmm1, %xmm0, %xmm0
     vsqrtsd %xmm0, %xmm0, %xmm0
     ret
 normalize://stuff in ymm0
@@ -72,13 +71,24 @@ deg2rad://converts degrees to radians
     divsd %xmm1, %xmm0
     ret
 sin2:
-    call sin@PLT
+    vmulsd eightyoneninetytwo(%rip), %xmm0, %xmm0
+    vcvtsd2si %xmm0, %rdi
+    lea sintable(%rip), %rsi
+    mov %rdi, %rax
+    add $51472, %rax
+    cmp $0,%rdi
+    cmovl %rax, %rdi
+    vmovsd (%rsi,%rdi,8),%xmm0
     ret
 cos2:
-    call cos@PLT
-    ret
-sincos2:
-    call sincos@PLT
+    vmulsd eightyoneninetytwo(%rip), %xmm0, %xmm0
+    vcvtsd2si %xmm0, %rdi
+    lea costable(%rip), %rsi
+    mov %rdi, %rax
+    add $51472, %rax
+    cmp $0,%rdi
+    cmovl %rax, %rdi
+    vmovsd (%rsi,%rdi,8),%xmm0
     ret
 exponent://take xmm0 to the power of xmm1
     sub $8, %rsp
@@ -106,9 +116,10 @@ exponent://take xmm0 to the power of xmm1
     vmovupd \arg2, %ymm1
 
     vmulpd %ymm0, %ymm1, %ymm0
-    vpermq $0b00000010, %ymm0, %ymm1
-    vhaddpd %ymm0, %ymm0, %ymm0
-    vaddsd %xmm0, %xmm1, %xmm0
+    vextractf128 $1, %ymm0, %xmm1
+    vaddpd %ymm0, %ymm1, %ymm0
+    vunpckhpd %xmm0, %xmm0, %xmm1
+    vaddsd %xmm1, %xmm0, %xmm0
     
     vpbroadcastq %xmm0, %ymm0
     vmovupd %ymm0, \result

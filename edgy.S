@@ -8,33 +8,32 @@ addpoint:
     cmp %rdx, 8(%rdi)
     jg nomemexpand
     push %rdi
-    sub $96, %rsp
-    movdqu %xmm0,32(%rsp)
-    movdqu %xmm1,16(%rsp)
-    movdqu %xmm2,(%rsp)
-    movdqu %xmm3,48(%rsp)
-    movdqu %xmm4,64(%rsp)
-    movdqu %xmm5,80(%rsp)
+    sub $48, %rsp
+    vmovsd %xmm0,(%rsp)
+    vmovsd %xmm1,8(%rsp)
+    vmovsd %xmm2,16(%rsp)
+    vmovsd %xmm3,24(%rsp)
+    vmovsd %xmm4,32(%rsp)
+    vmovsd %xmm5,40(%rsp)
     mov $1024, %rsi
     call resizematrix
-    movdqu 32(%rsp),%xmm0
-    movdqu 16(%rsp),%xmm1
-    movdqu (%rsp) ,%xmm2
-    movdqu 48(%rsp),%xmm3
-    movdqu 64(%rsp),%xmm4
-    movdqu 80(%rsp) ,%xmm5
-    add $96, %rsp
+    vmovsd (%rsp), %xmm0
+    vmovsd 8(%rsp), %xmm1
+    vmovsd 16(%rsp), %xmm2
+    vmovsd 24(%rsp), %xmm3
+    vmovsd 32(%rsp), %xmm4
+    vmovsd 40(%rsp), %xmm5
+    add $48, %rsp
     pop %rdi
     nomemexpand:
     mov 24(%rdi), %rax
     shl $5, %rax
     mov (%rdi),%rdx
-    add %rdx, %rax
-    movsd %xmm0, (%rax)
-    movsd %xmm1, 8(%rax)
-    movsd %xmm2, 16(%rax)
+    movsd %xmm0, (%rdx,%rax)
+    movsd %xmm1, 8(%rdx,%rax)
+    movsd %xmm2, 16(%rdx,%rax)
     movsd one(%rip), %xmm0
-    movsd %xmm0, 24(%rax)
+    movsd %xmm0, 24(%rdx,%rax)
     incq 24(%rdi)
     ret
 addedge:

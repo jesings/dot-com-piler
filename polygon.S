@@ -62,6 +62,9 @@ drawtri://first point in ymm0, second point in ymm1, third point in ymm2, draws 
     call crossproduct//calculate cross product of 2 vectors
     call normalize//normalize resultant vectors
     vmovupd %ymm0, surfacenormal(%rip)
+    lea surfacenormal(%rip), %rdi
+    mov zeros(%rip), %rsi
+    mov %rsi, 24(%rdi)
     vmovupd viewvect(%rip), %ymm1
     call dotproduct//take the dot product of the view vector and the normalized vector
     vmovsd zeros(%rip), %xmm8

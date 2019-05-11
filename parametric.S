@@ -5,6 +5,7 @@
 .global tempmatrix4
 .global tempmatrixX
 .global tempmatrixG
+.global pio2
 .data
     .align 32
     pointo1: .double .05

@@ -1,6 +1,7 @@
 executable = 3d
-all: matrix.o draw.o edgy.o prgrid.o bresenham.o manipulations.o parser.o parametric.o polygon.o polyhedra.o math.o stack.o
-	gcc -o $(executable) draw.o matrix.o edgy.o prgrid.o bresenham.o manipulations.o parser.o parametric.o polygon.o polyhedra.o math.o stack.o -lm -lgcc
+#illumiation calculations, add points to sphere
+all: matrix.o draw.o edgy.o prgrid.o bresenham.o manipulations.o parser.o parametric.o polygon.o polyhedra.o math.o stack.o sintable.o
+	gcc -o $(executable) draw.o matrix.o edgy.o prgrid.o bresenham.o manipulations.o parser.o parametric.o polygon.o polyhedra.o math.o stack.o sintable.o
 	./$(executable)
 draw.o: draw.S
 	gcc -c -g draw.S
@@ -26,6 +27,8 @@ math.o: math.S
 	gcc -c -g math.S
 stack.o: stack.S
 	gcc -c -g stack.S
+sintable.o: sintable.S
+	gcc -c -g sintable.S
 clean:
 	rm *.o
 	rm $(executable)

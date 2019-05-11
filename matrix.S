@@ -170,8 +170,6 @@ forcematrix://turns square matrix %rdi into an bezier matrix, matrix to force is
     ret
 
 multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix in rsi, no return value
-    pushq %r14
-
     pushq %rdi
     pushq %rsi
     mov 8(%rsi), %rax
@@ -183,12 +181,8 @@ multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix i
     popq %rsi
     popq %rdi//okay this makes a new array
 
-    mov 24(%rsi), %r10
-    vpcmpeqq %ymm8, %ymm8, %ymm8
     vmovupd indices(%rip), %ymm4
-    xor %r14, %r14
-    loop_layer_0:
-    //put r14th row of matrix 1 in ymm1
+    vpcmpeqq %ymm8, %ymm8, %ymm8
     mov (%rdi),%rax
     vmovupd %ymm8, %ymm3
     vgatherqpd %ymm3, (%rax,%ymm4,8), %ymm0
@@ -198,40 +192,43 @@ multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix i
     vgatherqpd %ymm3, 16(%rax,%ymm4,8), %ymm2
     vmovupd %ymm8, %ymm5
     vgatherqpd %ymm5, 24(%rax,%ymm4,8), %ymm3
-    //put r14th column of matrix 2 in ymm2
-    mov (%rsi),%rdx
-    mov %r14, %rax
-    shl $5, %rax//multiply by 32
-    vmovupd (%rdx,%rax), %ymm5
+
+    mov 24(%rsi), %r10
+    xor %rax, %rax
+    xor %rcx, %rcx
+    mov (%rsi), %rdx
+    loop_layer_0:
+    vmovupd (%rdx, %rcx), %ymm5
     //properly accumulate data
-    mov %r14, %rcx
-    sal $2, %rcx
-    vmulpd %ymm0, %ymm5, %ymm0
-    vhaddpd %ymm0, %ymm0, %ymm0
-    vpermq $0b11011000, %ymm0, %ymm0
-    vhaddpd %ymm0, %ymm0, %ymm0
-    vmovsd %xmm0,(%r8,%rcx,8)
 
-    vmulpd %ymm1, %ymm5, %ymm1
-    vhaddpd %ymm1, %ymm1, %ymm1
-    vpermq $0b11011000, %ymm1, %ymm1
-    vhaddpd %ymm1, %ymm1, %ymm1
-    vmovsd %xmm1,8(%r8,%rcx,8)
-
-    vmulpd %ymm2, %ymm5, %ymm2
-    vhaddpd %ymm2, %ymm2, %ymm2
-    vpermq $0b11011000, %ymm2, %ymm2
-    vhaddpd %ymm2, %ymm2, %ymm2
-    vmovsd %xmm2,16(%r8,%rcx,8)
-
-    vmulpd %ymm3, %ymm5, %ymm3
-    vhaddpd %ymm3, %ymm3, %ymm3
-    vpermq $0b11011000, %ymm3, %ymm3
-    vhaddpd %ymm3, %ymm3, %ymm3
-    vmovsd %xmm3,24(%r8,%rcx,8)
+    vmulpd %ymm0, %ymm5, %ymm9
+    vmulpd %ymm1, %ymm5, %ymm10
+    vmulpd %ymm2, %ymm5, %ymm11
+    vmulpd %ymm3, %ymm5, %ymm12
+    vextractf128 $1, %ymm9, %xmm5
+    vextractf128 $1, %ymm10, %xmm6
+    vextractf128 $1, %ymm11, %xmm7
+    vextractf128 $1, %ymm12, %xmm8
+    vaddpd %xmm9, %xmm5, %xmm9
+    vaddpd %xmm10, %xmm6, %xmm10
+    vaddpd %xmm11, %xmm7, %xmm11
+    vaddpd %xmm12, %xmm8, %xmm12
+    vunpckhpd %xmm9, %xmm9, %xmm5
+    vunpckhpd %xmm10, %xmm10, %xmm6
+    vunpckhpd %xmm11, %xmm11, %xmm7
+    vunpckhpd %xmm12, %xmm12, %xmm8
+    vaddsd %xmm5, %xmm9, %xmm9
+    vaddsd %xmm6, %xmm10, %xmm10
+    vaddsd %xmm7, %xmm11, %xmm11
+    vaddsd %xmm8, %xmm12, %xmm12
+    vmovsd %xmm9,(%r8,%rcx)
+    vmovsd %xmm10,8(%r8,%rcx)
+    vmovsd %xmm11,16(%r8,%rcx)
+    vmovsd %xmm12,24(%r8,%rcx)
     //loop stuff
-    inc %r14
-    cmp %r10,%r14
+    inc %rax
+    add $32, %rcx
+    cmp %r10,%rax
     jl loop_layer_0
 
     push %rsi
@@ -240,7 +237,5 @@ multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix i
     call free@PLT
     pop %r8
     pop %rsi
-
     mov %r8, (%rsi)//frees the old array in matrix 2, and insert the array pointed to by %r8
-    popq %r14
     ret
