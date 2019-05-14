@@ -10,7 +10,7 @@
     .align 32
     _x: .quad 0
     y: .quad 0
-    truncator: .double 1000
+    truncator: .double 1
 .bss
     .align 32
     x0: .quad 0
@@ -249,8 +249,9 @@ bresenham2: //something like this: bresenham(int color,int x0,int x1, int y, dou
     push %rax
     push %rcx
     imul $3,%rcx
-
+    mov 3(%rdi,%rcx), %r10b
     mov %eax, (%rdi,%rcx)//put pixel color in location
+    mov %r10b, 3(%rdi,%rcx)
     pop %rcx
     pop %rax
     oof:

@@ -1,11 +1,12 @@
-.global main
-.global data
+.global draw
 .global edgem
 .global trim
 .global name
 .global parsefd
 .global zbuffer
 .global half
+.global data
+.global minval
 .data
     .align 32
     x: .quad 0
@@ -14,6 +15,8 @@
     name: .asciz "./image.ppm"
     .align 32
     parsefile: .asciz "./script"
+    .align 32
+    minval: .double -inf
 .bss
     .align 32
     data: .zero 1048576
@@ -24,7 +27,7 @@
     trim: .quad 0
     parsefd: .quad 0
 .text
-main:
+draw:
     lea zbuffer(%rip), %rdi
     mov minval(%rip), %rax
     mov $262144, %rcx
@@ -54,16 +57,15 @@ main:
 
     call init_temps//initialize temporary values
 
-    mov $2, %rax
-    lea parsefile(%rip), %rdi//open parsefile for parsing
-    xor %rsi, %rsi
-    syscall
-    mov %rax, parsefd(%rip)
-    call parse//actually parse file
+    xor %rax, %rax
+    nextop:
+    push %rax
+    call handleop
+    pop %rax
+    inc %rax
+    cmp lastop(%rip), %rax
+    jl nextop
 
-    mov $3, %rax
-    mov parsefd(%rip), %rdi
-    syscall//close parsefile
 
     mov edgem(%rip), %rdi
     call freematrix//free edge matrix

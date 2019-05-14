@@ -9,6 +9,8 @@
 .global zeros
 .global sinarg
 .global cosarg
+.global ambient
+.global mask
 .data
     .align 32
     pi: .double 3.141592658979
@@ -137,12 +139,12 @@ exponent://take xmm0 to the power of xmm1
     cmpq $0, %r\regname
     cmovl %rdi, %r\regname
 .endm
-.macro diffuse
+diffuse:
     vmulpd %ymm4, %ymm1, %ymm1
     broadcastdotproduct %ymm3, surfacenormal(%rip), %ymm5
     vmulpd %ymm1, %ymm5, %ymm1
-.endm
-.macro specular
+    ret
+specular:
     vmulpd %ymm4, %ymm2, %ymm2
     vmulpd twos(%rip), %ymm5, %ymm5
     vmulpd surfacenormal(%rip), %ymm5, %ymm5
@@ -153,8 +155,8 @@ exponent://take xmm0 to the power of xmm1
     vmulpd %ymm5, %ymm5, %ymm5
     vmulpd %ymm5, %ymm5, %ymm5
     vmulpd %ymm5, %ymm2, %ymm2
-.endm
-.macro setcolor//color packed in xmm0
+    ret
+setcolor://color packed in ymm0
     vcvtsd2si %xmm0, %rax
     vpermq $0b1001, %ymm0, %ymm0
     vcvtsd2si %xmm0, %rcx
@@ -170,7 +172,7 @@ exponent://take xmm0 to the power of xmm1
     mov %dx, 2(%rsp)
     mov (%rsp), %r15
     add $8, %rsp
-.endm
+    ret
 illumination://Ka, Kd, Ks are in xmm 0, 1, 2, vector of light is in xmm3, color of light is in xmm4
     //Calculate ambient light
     sub $64, %rsp
@@ -184,11 +186,11 @@ illumination://Ka, Kd, Ks are in xmm 0, 1, 2, vector of light is in xmm3, color 
     add $64, %rsp
     vmovupd ambient(%rip), %ymm5
     vmulpd %ymm5, %ymm0, %ymm0//this is the ambient light
-    diffuse
-    specular
+    call diffuse
+    call specular
     vcmppd $0x1D, zeros(%rip), %ymm1, %ymm6
     vandpd %ymm1, %ymm6, %ymm1
     vaddpd %ymm0, %ymm1, %ymm0
     vaddpd %ymm0, %ymm2, %ymm0
-    setcolor
+    call setcolor
     ret

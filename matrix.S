@@ -170,7 +170,7 @@ forcematrix://turns square matrix %rdi into an bezier matrix, matrix to force is
     ret
 
 multiplymatrix: //multiplies matrix1 rdi, matrix2 rsi, stores resulting matrix in rsi, no return value
-    vmovupd indices(%rip), %ymm4
+    vmovdqu indices(%rip), %ymm4
     vpcmpeqq %ymm8, %ymm8, %ymm8
     mov (%rdi),%rax
     vmovupd %ymm8, %ymm3

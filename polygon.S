@@ -1,6 +1,15 @@
 .global addtri
 .global drawtris
 .global surfacenormal
+.global lightloc
+.global lightcolor
+.global Ka
+.global Kd
+.global Ks
+.global Kad
+.global Kdd
+.global Ksd
+
 .data
     .align 32
     viewvect: .double 0, 0, 1, 0
@@ -11,9 +20,17 @@
     .align 32
     Ks: .double .5, .5, .5, 0
     .align 32
+    Kys: .double 0, 0, 0, 0
+    .align 32
+    Kad: .double .1, .1, .1, 0
+    .align 32
+    Kdd: .double .5, .5, .5, 0
+    .align 32
+    Ksd: .double .5, .5, .5, 0
+    .align 32
     lightloc: .double -.5, -.75, -1
     .align 32
-    lightcolor: .double 0, 255, 255, 0
+    lightcolor: .double 255, 255, 255, 0
     .align 32
     surfacenormal: .double 0, 0, 0, 0
 .bss
