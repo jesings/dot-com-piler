@@ -247,6 +247,8 @@ handleop://raxth element of symtab
 
     call execlp@PLT
     sover:
+    call wait@PLT
+    destroyfile
     ret
     .generate_rayfiles:
     .shading:
@@ -272,6 +274,8 @@ handleop://raxth element of symtab
     mov $0, %rcx
     call execlp@PLT
     dover:
+    mov $0, %rdi
+    call wait@PLT
     destroyfile
     ret
     .web:

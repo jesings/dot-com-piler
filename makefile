@@ -38,7 +38,7 @@ sintable.o: sintable.S
 compiler.o: compiler.S
 	gcc -c -g compiler.S
 clean:
-	-rm *.png *.gif *.jpg 2> /dev/null
+	-rm *.png *.gif *.jpg *.ppm 2> /dev/null
 	-rm y.tab.c y.tab.h 2> /dev/null
 	-rm lex.yy.c 2> /dev/null
 	-rm -rf mdl.dSYM 2> /dev/null
