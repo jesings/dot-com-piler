@@ -219,24 +219,34 @@ handleop://raxth element of symtab
     syscall//remove temporary file
 .endm
     .save:
+    mov $57, %rax
+    syscall
+    test %rax, %rax
+    jnz sover
     mov 8(%rdi), %rsi
     mov (%rsi), %rsi//name
-    lea name(%rip), %rdi
     push %rsi
+    lea name(%rip), %rdi
     call pr
     pop %rsi
     vmovups (%rsi), %ymm1
     movsd convert(%rip),%xmm0
     movsd %xmm0, buf(%rip)
     lea buf(%rip), %rdi
-    movb $0x20, 7(%rdi)
+    movb $0x0, 7(%rdi)
     movupd name(%rip), %xmm0
     movupd %xmm0, 8(%rdi)
-    movb $0x20, 19(%rdi)
+    movb $0x0, 19(%rdi)
     vmovupd %ymm1, 20(%rdi)
-    call system@PLT
+    mov %rdi, %rsi
+    mov %rsi, %rdx
+    mov %rdx, %rcx
+    add $8, %rdx
+    add $20, %rcx
+    mov $0, %r8
 
-    destroyfile
+    call execlp@PLT
+    sover:
     ret
     .generate_rayfiles:
     .shading:
@@ -246,13 +256,22 @@ handleop://raxth element of symtab
     .display:
     lea name(%rip), %rdi
     call pr
+    mov $57, %rax
+    syscall
+    test %rax, %rax
+    jnz dover
     vmovupd name(%rip), %ymm1
     movsd display(%rip),%xmm0
     lea buf(%rip), %rdi
     movsd %xmm0, (%rdi)
-    movb $0x20, 7(%rdi)
+    movb $0x0, 7(%rdi)
     vmovupd %ymm1, 8(%rdi)
-    call system@PLT
+    mov %rdi, %rsi
+    mov %rsi, %rdx
+    add $8, %rdx
+    mov $0, %rcx
+    call execlp@PLT
+    dover:
     destroyfile
     ret
     .web:
