@@ -8,6 +8,7 @@
 int yylex();
 int yyerror();
 long int draw();
+long int mstrcmp(char* str1, char* str2);
 
 struct matrix* makematrix(long int cols, long int rows);
 struct matrix{
@@ -22,61 +23,8 @@ struct matrix{
   struct constants *c;
   struct command op[MAX_COMMANDS];
   struct matrix *m;
-  long int lastop=0;
   long int lineno=0;
-SYMTAB *lookup_symbol(char *name)
-{
-  int i;
-  for (i=0;i<lastsym;i++)
-    {
-      if (!strcmp(name,symtab[i].name))
-        {
-          return (SYMTAB *) &(symtab[i]);
-        }
-    }
-  return (SYMTAB *)NULL;
-}
-SYMTAB *add_symbol(char *name, long int type, void *data)
-{
-  SYMTAB *t;
-
-  t = (SYMTAB *)lookup_symbol(name);
-  if (t==NULL)
-    {
-      if (lastsym >= MAX_SYMBOLS)
-        {
-          return NULL;
-        }
-      t = (SYMTAB *)&(symtab[lastsym]);
-      lastsym++;
-    }
-  else
-    {
-      return t;
-    }
-
-  t->name = (char *)malloc(strlen(name)+1);
-  strcpy(t->name,name);
-  t->type = type;
-  switch (type)
-    {
-    case SYM_CONSTANTS:
-      t->s.c = (struct constants *)data;
-      break;
-    case SYM_MATRIX:
-      t->s.m = (struct matrix *)data;
-      break;
-    case SYM_LIGHT:
-      t->s.l = (struct light *)data;
-      break;
-    case SYM_VALUE:
-      t->s.value = (double)(long int)data;
-      break;
-    case SYM_FILE:
-      break;
-    }
-  return (SYMTAB *)&(symtab[lastsym-1]);
-}
+SYMTAB *add_symbol(char *name, long int type, void *data);
   %}
 
 

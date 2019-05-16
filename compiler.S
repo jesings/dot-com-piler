@@ -1,14 +1,16 @@
 #define COMMENT 258
 #define PADDING COMMENT*8
-//.global add_symbol
-/.global lookup_symbol
+.global add_symbol
+.global lookup_symbol
 .global set_value
 .global symtab
 .global lastsym
 .global handleop
 .global _convert
+.global lastop
 .data
     lastsym: .quad 0
+    lastop: .quad 0
     convert: .asciz "convert"
     display: .asciz "display"
     buf: .zero 1024
@@ -247,7 +249,12 @@ handleop://raxth element of symtab
 
     call execlp@PLT
     sover:
-    call wait@PLT
+    mov $61, %rax
+    mov $-1, %rdi
+    xor %rsi, %rsi
+    xor %rdx, %rdx
+    xor %rcx, %rcx
+    syscall
     destroyfile
     ret
     .generate_rayfiles:
@@ -274,8 +281,12 @@ handleop://raxth element of symtab
     mov $0, %rcx
     call execlp@PLT
     dover:
-    mov $0, %rdi
-    call wait@PLT
+    mov $61, %rax
+    mov $-1, %rdi
+    xor %rsi, %rsi
+    xor %rdx, %rdx
+    xor %rcx, %rcx
+    syscall
     destroyfile
     ret
     .web:
@@ -319,7 +330,7 @@ cleanup:
     vmovupd Ksd(%rip), %ymm0
     vmovupd %ymm0, Ks(%rip)
     ret
-badd_symbol://rdi: char^ name, rsi long int type, rdx void* data
+add_symbol://rdi: char^ name, rsi long int type, rdx void* data
     push %rdi
     push %rsi
     push %rdx
@@ -331,91 +342,111 @@ badd_symbol://rdi: char^ name, rsi long int type, rdx void* data
     jnz badendadd
     cmpq $max_symbols, lastsym(%rip)
     jge badendadd
-
-    lea symtab(%rip), %r8
-    mov lastsym(%rip), %rcx
-    imul $24, %rcx
-    add %r8, %rcx
+    lea symtab(%rip), %rcx
+    mov lastsym(%rip), %rax
+    imul $24, %rax
+    add %rax, %rcx
     incq lastsym(%rip)
-    mov %rsi,8(%rcx) //special case for SYM_FILE????
-    mov %rdx,16(%rcx)
+    mov %rsi, 8(%rcx)
+    mov %rdx, 16(%rcx)
     push %rcx
     push %rdi
     call mstrlen
-    mov %rcx, %rdi
-    inc %rdi
-    call malloc@PLT
     mov %rax, %rdi
-    inc %rcx
-    pop %rsi
-    push %rdi
-    yorshstring:
-    lodsb
-    stosb
-    testb %al,%al
-    jne yorshstring
+    call malloc@PLT
     pop %rdi
-    pop %rcx
-    mov %rdi, (%rcx)
-    mov %rcx, %rax
-    ret
+    mov %rax, %rsi
+    push %rsi
+    call mstrcpy
+    pop %rsi
+    pop %rax
+    mov %rsi, (%rax)
     badendadd:
-    mov $0, %rax
     ret
 lookup_symbol://rdi char* name
     xor %rax, %rax
     cmp lastsym(%rip), %rax
-    jge inequality
-    lookuploop:
+    je notfound
     lea symtab(%rip), %rsi
-    mov %rax, %r8
-    imul $24, %rax
-    add %rax, %rsi
-    mov (%rsi), %rsi
+    finding:
     push %rax
-    push %rdi
+    push %rsi
+    mov (%rsi),%rsi
     call mstrcmp
     mov %rax, %rdx
-    pop %rdi
+    pop %rsi
     pop %rax
-    cmp $1, %rdx
-    je equality
+    test %rdx, %rdx
+    jz found
+    add $24, %rsi
     inc %rax
     cmp lastsym(%rip), %rax
-    jl lookuploop
-    inequality:
-    mov $0, %rax
+    jl finding
+    notfound:
+    xor %rax, %rax
     ret
-    equality:
-    lea symtab(%rip), %rsi
-    imul $24, %rax
-    add %rsi, %rax
+    found:
+    mov %rsi, %rax
     ret
+    
 set_value://rdi symtab* p , xmm0 double value
     movsd %xmm0, 16(%rdi)
     ret
 
 mstrcmp:
-    push %rsi
-    push %rdi
-    call mstrlen
-    mov 8(%rsp), %rsi
-    mov (%rsp), %rdi
-    repe cmpsb
-    test %rcx, %rcx
-    mov $0, %rax
-    mov $1, %rdx
-    cmovz %rdx, %rax
-    pop %rdi
-    pop %rsi
+    mov $-16, %rax
+    compareloop:
+    add $16, %rax
+    movdqu (%rdi,%rax), %xmm1 # read 16 bytes of string 1
+    pcmpistri $0b00011000, (%rsi,%rax), %xmm1 # unsigned bytes, equal each, invert. returns index in ecx
+    jnbe compareloop # jump if not carry flag and not zero flag
+    jnc equal
+    notequal:
+    # strings are not equal
+    add %rax, %rcx # offset to first differing byte
+    movzxb (%rdi,%rcx), %rax # compare first differing byte
+    movzxb (%rsi,%rcx), %edx
+    sub %rdx, %rax
     ret
+    equal:
+    xor %eax, %eax               # strings are equal
+    ret
+
 mstrlen:
-    xor %rcx, %rcx
-    xor %al, %al
-    not %rcx
-    cld
-    repne scasb
-    not %rcx
-    dec %rcx
-    mov %rcx, %rax
+    mov %rdi, %rax
+    mov %edi, %ecx
+    pxor %xmm0, %xmm0
+    and $0x0F, %ecx
+    and $-0x10, %rax
+    movdqa (%rax), %xmm1
+    pcmpeqb %xmm0, %xmm1
+    pmovmskb %xmm1, %edx
+    shr %cl, %edx
+    shl %cl, %edx
+    bsf %edx, %edx
+    jnz  L2
+    L1:     
+    add $0x10, %rax
+    movdqa (%rax), %xmm1
+    pcmpeqb %xmm0, %xmm1
+    pmovmskb %xmm1, %edx
+    bsf %edx, %edx
+    jz L1
+    sub %rdi, %rax
+    add %rdx, %rax
+    ret    
+    L2:# Zero-byte found. Compute string length
+    sub %rdi, %rax
+    add %rdx, %rax
     ret
+
+mstrcpy://source in rdi, dest in rsi
+    push %rdi
+    push %rsi
+    call mstrlen
+    pop %rdi
+    pop %rsi//exchanged positions
+    mov %rax, %rcx
+	cld
+	rep movsb
+	ret
